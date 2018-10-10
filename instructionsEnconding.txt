@@ -1,0 +1,35 @@
+inc register 1 
+inc address 2
+
+add register, register 3
+add register, address 4
+add register, integer 5
+add address, address 6
+add address, register 7
+add address, integer 8
+
+mov register, register 9
+mov register, address 10
+mov register, integer 11
+mov address, address 12
+mov address, register 13
+mov address, integer 14
+
+imul register, register, register 15
+imul register, register, address 16
+imul register, register, integer 17
+imul register, address, register 18
+imul register, address, integer 19
+imul register, address, address 20
+imul register, integer, integer 21
+imul register, integer, register 22
+imul register, integer, address 23
+imul address, integer, integer 24
+imul address, integer, register 25
+imul address, integer, address 26
+imul address, address, address 27
+imul address, address, integer 28
+imul address, address, register 29
+imul address, register, register 30
+imul address, register, address 31
+imul address, register, integer 32
