@@ -51,6 +51,17 @@ loop {
   cpu.execute_instruction
 }
 
+puts <<~HEREDOC 
 
+\e[1m\e[4m\e[36mStatus do emulador\e[0m
 
-gets
+\e[4mREGISTRADORES\e[0m
+  A : #{cpu.A}
+  B : #{cpu.B}
+  C : #{cpu.C}
+  D : #{cpu.D}
+
+\e[4mMEMORIA\e[0m 
+#{ram.ram}
+
+HEREDOC

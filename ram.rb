@@ -4,8 +4,8 @@ class Ram
   attr_reader :ram
 
   def initialize ram_size, bus
-    @read_op = 100010 # 34
-    @write_op = 100011 # 35
+    @read_op = 100_010 # 34
+    @write_op = 100_011 # 35
     @ram_size = ram_size
     @bus = bus
     @ram = Array.new ram_size, 0
@@ -60,7 +60,7 @@ class Ram
         @bus.send_cpu @ram[address]
       else
         abort "Invalid ram operation" 
-      end 
-    end 
+      end
+    end
   end
 end
