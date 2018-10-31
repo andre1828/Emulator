@@ -1,10 +1,12 @@
-require './parser'
-require './encoder'
-require './io_module'
-require './bus'
-require './ram'
-require './cpu'
+require "./parser"
+require "./encoder"
+require "./io_module"
+require "./bus"
+require "./ram"
+require "./cpu"
 
+clock = 1000
+bandwidth = 1000
 word_size = 64
 bufferSize = 64
 bus_size = 32
@@ -12,9 +14,13 @@ ram_size = 128
 read_op = 100010
 write_op = 100011
 
+
+
+
+
 instructions = []
-File.open('code.c').each do |line|
-  instructions << line unless line.start_with? '//'
+File.open("code.c").each do |line|
+  instructions << line unless line.start_with? "//"
 end
 
 tokens = Parser.new.tokenize instructions
@@ -39,21 +45,22 @@ io_module.getEncodedInstructions bytecode
 
 # loop
 loop {
+  sleep (clock / 1000)
   break if io_module.instructions.empty?
   puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
   io_module.send_ram write_op
   ram.receive_ram
   io_module.send_interruption
-  cpu.receive_cpu 
+  cpu.receive_cpu
   # cpu calls send_ram internally to ask for instruction
   ram.receive_ram
   cpu.receive_cpu # get requested instruction
   cpu.execute_instruction
 }
 
-puts <<~HEREDOC 
+puts <<~HEREDOC
 
-\e[1m\e[4m\e[36mStatus do emulador\e[0m
+  \e[1m\e[4m\e[36mStatus do emulador\e[0m
 
 \e[4mREGISTRADORES\e[0m
   A : #{cpu.A}
@@ -66,6 +73,6 @@ puts <<~HEREDOC
 
 HEREDOC
 
-ram.ram.each_with_index{ |a, index| 
-  puts "#{index} : #{a}" 
-} 
+ram.ram.each_with_index { |a, index|
+  puts "#{index} : #{a}"
+}
