@@ -134,7 +134,6 @@ class CPU
   end
 
   def decode_mem_address(mem_address)
-    # puts "decode_mem_address :  #{mem_address}"
     ('0x0' + mem_address.to_s(16)).upcase!
   end
 
@@ -159,7 +158,7 @@ class CPU
       new_execute_imul @instruction[1], @instruction[2], @instruction[3]
     else
       abort 'Invalid instruction'
-      end
+    end
   end
 
   # def execute_inc(parameter)
@@ -564,24 +563,26 @@ class CPU
   # end
 
   def new_execute_inc(parameter)
-    write_value parameter, (read_value parameter) + 1
+    puts "new_execute_inc #parameter : #{parameter}"
+    write_value(parameter, (read_value parameter) + 1)
     puts "#### ram size : #{@ram.ram.count}"
   end
 
   def new_execute_add(fst_parameter, snd_parameter)
-    write_value fst_parameter, (read_value fst_parameter) + (read_value snd_parameter)
+    write_value(fst_parameter, (read_value fst_parameter) + (read_value snd_parameter))
   end
 
   def new_execute_mov(fst_parameter, snd_parameter)
-    write_value fst_parameter, (read_value snd_parameter)
+    write_value(fst_parameter, (read_value snd_parameter))
   end
 
   def new_execute_imul(fst_parameter, snd_parameter, trd_parameter)
-    write_value fst_parameter, (read_value fst_parameter) * (read_value snd_parameter) * (read_value trd_parameter)
+    write_value(fst_parameter, (read_value fst_parameter) * (read_value snd_parameter) * (read_value trd_parameter))
   end
 
   def read_value param
     return param if param.is_a? Integer
+
     if is_register? param
       instance_variable_get "@#{param}"
     else
@@ -594,12 +595,13 @@ class CPU
   end
 
   def write_value param, value
-    puts "##########write_value param is integer #{param}" if param.is_a? Integer
+    puts "##########  write_value : write #{value} to #{param}"
     # abort 'Cannot write to integer' if param.is_a? Integer
     if is_register? param
       instance_variable_set("@#{param}", value)
     else
-      mem_address = param
+      mem_address = (param.is_a? String) ? (mem_address_2_decimal param) : param 
+
       puts " ### writing to mem_address : #{mem_address + 4}"
       @bus.send_ram [@write_op, mem_address + 4, value]
       @ram.receive_ram

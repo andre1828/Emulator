@@ -65,3 +65,7 @@ puts <<~HEREDOC
 #{ram.ram}
 
 HEREDOC
+
+ram.ram.each_with_index{ |a, index| 
+  puts "#{index} : #{a}" 
+} 
