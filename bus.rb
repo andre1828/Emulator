@@ -1,6 +1,7 @@
 # barramento só influencia na checagem por enquanto
 
 class Bus
+  attr_reader :ram_bus
   def initialize bus_size
     @bus_size = bus_size
     @ram_bus = []

@@ -3,6 +3,8 @@
 class Parser
 
   def initialize
+    @label_regex = /^(label)\s*(\d{1}|\d{2})$/
+    @loop_regex = /\s*(?:(A|B|C|D)|(0x(?:[0-9]|[A-F]){2})|([0-9]|[0-9][0-9]|[0-2][0-5][0-5]))\s*(>|<|>=|<=|==|!=)\s*(?:(A|B|C|D)|(0x(?:[0-9]|[A-F]){2})|([0-9]|[0-9][0-9]|[0-2][0-5][0-5]))\s*:\s*(jmp)\s*(\d{1}|\d{2})\s*:\s*(brk)$/
     @inc_regex = /^(inc)\s*(?:(A|B|C|D)|(0x(?:[0-9]|[A-F]){2}))$/
     @add_regex = /^(add)\s*(?:(A|B|C|D)|(0x(?:[0-9]|[A-F]){2}))\s*,\s*(?:(A|B|C|D)|(0x+(?:[0-9]|[A-F]){2})|([0-9]|[0-9][0-9]|[0-2][0-5][0-5]))$/
     @mov_regex = /^(mov)\s*(?:(A|B|C|D)|(0x(?:[0-9]|[A-F]){2}))\s*,\s*(?:(A|B|C|D)|(0x(?:[0-9]|[A-F]){2})|([0-9]|[0-9][0-9]|[0-2][0-5][0-5]))$/
@@ -24,6 +26,10 @@ class Parser
       list_of_strings = line.scan(@mov_regex)
     elsif line.scan(@imul_regex) != []
       list_of_strings = line.scan(@imul_regex)
+    elsif line.scan(@label_regex) != []
+      list_of_strings = line.scan(@label_regex)
+    elsif line.scan(@loop_regex) != []
+      list_of_strings = line.scan(@loop_regex)
     else
       abort "Invalid instruction in line \n'#{line}'"
     end

@@ -28,9 +28,10 @@ class Ram
       operation = instruction.shift
       if operation == @write_op
         puts "ram got request to write instruction"
-        instruction.shift # mem address
-        # check if mem address is out of reach and if it is, fill array with zeros
-        @ram[0,3] = instruction
+        # instruction.shift # mem address
+        # TODO check if mem address is out of reach and if it is, fill array with zeros
+        # @ram[0,3] = instruction
+        @ram = instruction.concat @ram
         # instruction.each do |piece|
         #   @ram << piece
         # end

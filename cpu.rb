@@ -4,25 +4,34 @@ class CPU
   def initialize(bus, ram)
     @read_op = 100_010 # 34
     @write_op = 100_011
-    @interruption = 100_011 # 33
+    @interruption = 100_001 # 33
     @instruction
     @value
     @bus = bus
     @ram = ram
-    @A = 2
-    @B = 4
-    @C = 6
-    @D = 8
+    @A = 0
+    @B = 0
+    @C = 0
+    @D = 0
     @pi
+    @cache = []
+    @ram_to_cache = {}
   end
 
   def receive_cpu
     received = @bus.receive_cpu
-    puts "cpu : received #{received} "
-    if received[0] == 100_001
-      puts 'cpu : got interruption, requesting ram for instructions '
-      @bus.send_ram [@read_op, 0, 3]
+    puts "cpu : received #{received}"
+    if received[0] == @interruption
+      puts 'cpu : got interruption'
+      if on_cache received[1]
+        puts "\e[96m  instruction is cached \e[0m"
+        use_instruction_from_cache(received[1])
+      else
+        puts "\e[96m  instruction is NOT cached \e[0m"
+        # @bus.send_ram [@read_op, 0, 3]
+      end
     elsif is_instruction? received # ram sent the requested instruction
+      puts "\e[36m received : #{received} \e[0m"
       puts 'cpu : got the requested instruction'
       @instruction = received
       puts "instruction : #{@instruction}"
@@ -31,10 +40,11 @@ class CPU
       else
         @pi += 1
       end
-      puts "cpu : current instruction #{@instruction} . current pi #{@pi}"
+      puts "cpu : current instruction #{@instruction}. current pi \e[91m#{@pi}\e[0m"
       @instruction = convert_to_decimal @instruction
       @instruction = decode_instruction @instruction
       puts "decoded instruction #{@instruction}"
+      
     else
       puts 'cpu : got requested value'
       @value = received
@@ -161,407 +171,6 @@ class CPU
     end
   end
 
-  # def execute_inc(parameter)
-  #   if is_register? parameter
-  #     case parameter
-  #     when :A
-  #       @A += 1
-  #       puts " register A : #{@A}"
-  #     when :B
-  #       @B += 1
-  #       puts " register B : #{@B}"
-  #     when :C
-  #       @C += 1
-  #       puts " register C : #{@C}"
-  #     when :D
-  #       @D += 1
-  #       puts " register D : #{@D}"
-  #     else
-  #       abort 'invalid register'
-  #       end
-  #   else # mem address
-  #     puts "execute_inc : increment address #{parameter}"
-  #     parameter += 4
-  #     @bus.send_ram [@read_op, parameter, 0] # read value to increment
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     puts "cpu : value to increment : #{@value}"
-  #     @bus.send_ram [@write_op, parameter, @value + 1]
-  #     @ram.receive_ram
-  #   end
-  # end
-
-  # def execute_add(fst_parameter, snd_parameter)
-  #   if (is_register? fst_parameter) && (is_register? snd_parameter)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-  #     snd_register_value = instance_variable_get("@#{snd_parameter}")
-
-  #     instance_variable_set("@#{fst_parameter}", fst_register_value + snd_register_value)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")}"
-  #   elsif (is_register? fst_parameter) && (is_mem_address? snd_parameter)
-  #     mem_address = mem_address_2_decimal snd_parameter
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-
-  #     register_value = instance_variable_get("@#{fst_parameter}")
-
-  #     instance_variable_set("@#{fst_parameter}", @value + register_value)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (snd_parameter.is_a? Integer)
-  #     register_value = instance_variable_get("@#{fst_parameter}")
-  #     instance_variable_set("@#{fst_parameter}", register_value + snd_parameter)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_mem_address? fst_parameter) && (is_mem_address? snd_parameter)
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, fst_address_value + snd_address_value]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_register? snd_parameter)
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     register_value = instance_variable_get("@#{snd_parameter}")
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, fst_address_value + register_value]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (snd_parameter.is_a? Integer)
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, fst_address_value + snd_parameter]
-  #     @ram.receive_ram
-  #   else
-  #     abort 'Invalid parameters'
-  #   end
-  # end
-
-  # def execute_mov(fst_parameter, snd_parameter)
-  #   if (is_register? fst_parameter) && (is_register? snd_parameter)
-  #     snd_register_value = instance_variable_get("@#{snd_parameter}")
-  #     instance_variable_set("@#{fst_parameter}", snd_register_value)
-  #     puts "@#{fst_parameter} is now #{instance_variable_get("@#{fst_parameter}")}"
-
-  #   elsif (is_register? fst_parameter) && (is_mem_address? snd_parameter)
-  #     mem_address = mem_address_2_decimal snd_parameter
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-
-  #     instance_variable_set("@#{fst_parameter}", @value)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (snd_parameter.is_a? Integer)
-  #     instance_variable_set("@#{fst_parameter}", snd_parameter)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_mem_address? fst_parameter) && (is_mem_address? snd_parameter)
-  #     # fst_address_value
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, snd_address_value]
-  #   elsif (is_mem_address? fst_parameter) && (is_register? snd_parameter)
-  #     mem_address = mem_address_2_decimal fst_parameter
-  #     @bus.send_ram [@write_op, mem_address + 4, instance_variable_get("@#{snd_parameter}")]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (snd_parameter.is_a? Integer)
-  #     mem_address = mem_address_2_decimal fst_parameter
-  #     @bus.send_ram [@write_op, mem_address + 4, snd_parameter]
-  #     @ram.receive_ram
-  #   else
-  #     abort 'Invalid parameters'
-  #   end
-  # end
-
-  # def execute_imul(fst_parameter, snd_parameter, trd_parameter)
-  #   if (is_register? fst_parameter) && (is_register? snd_parameter) && (is_register? trd_parameter)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-  #     snd_register_value = instance_variable_get("@#{snd_parameter}")
-  #     trd_register_value = instance_variable_get("@#{trd_parameter}")
-
-  #     result = fst_register_value * snd_register_value * trd_register_value
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (is_register? snd_parameter) && (is_mem_address? trd_parameter)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-  #     snd_register_value = instance_variable_get("@#{snd_parameter}")
-
-  #     mem_address = mem_address_2_decimal trd_parameter
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = fst_register_value * snd_register_value * address_value
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (is_register? snd_parameter) && (trd_parameter.is_a? Integer)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-  #     snd_register_value = instance_variable_get("@#{snd_parameter}")
-
-  #     result = fst_register_value * snd_register_value * trd_parameter
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (is_mem_address? snd_parameter) && (is_register? trd_parameter)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-  #     snd_register_value = instance_variable_get("@#{trd_parameter}")
-
-  #     mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = fst_register_value * snd_register_value * address_value
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (is_mem_address? snd_parameter) && (trd_parameter.is_a? Integer)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-
-  #     mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = fst_register_value * address_value * trd_parameter
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (is_mem_address? snd_parameter) && (is_mem_address? trd_parameter)
-  #     register_value = instance_variable_get("@#{fst_parameter}")
-
-  #     fst_mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     snd_mem_address = mem_address_2_decimal trd_parameter
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     result = register_value * fst_address_value * snd_address_value
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (snd_parameter.is_a? Integer) && (trd_parameter.is_a? Integer)
-  #     register_value = instance_variable_get("@#{fst_parameter}")
-
-  #     result = register_value * snd_parameter * trd_parameter
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (snd_parameter.is_a? Integer) && (is_register? trd_parameter)
-  #     fst_register_value = instance_variable_get("@#{fst_parameter}")
-  #     snd_register_value = instance_variable_get("@#{trd_parameter}")
-
-  #     result = fst_register_value * snd_register_value * snd_parameter
-
-  #     instance_variable_set("@#{fst_parameter}", result)
-
-  #     puts "register #{fst_parameter} now holds the value #{instance_variable_get("@#{fst_parameter}")} "
-  #   elsif (is_register? fst_parameter) && (snd_parameter.is_a? Integer) && (is_mem_address? trd_parameter)
-  #     register_value = instance_variable_get("@#{fst_parameter}")
-  #     mem_address = mem_address_2_decimal fst_parameter
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = register_value * snd_parameter * address_value
-
-  #     @bus.send_ram [@write_op, mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (snd_parameter.is_a? Integer) && (trd_parameter.is_a? Integer)
-  #     mem_address = mem_address_2_decimal fst_parameter
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = address_value * snd_parameter * trd_parameter
-
-  #     @bus.send_ram [@write_op, mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (snd_parameter.is_a? Integer) && (is_register? trd_parameter)
-  #     mem_address = mem_address_2_decimal fst_parameter
-  #     register_value = instance_variable_get("@#{trd_parameter}")
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = address_value * snd_parameter * register_value
-
-  #     @bus.send_ram [@write_op, mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (snd_parameter.is_a? Integer) && (is_mem_address? trd_parameter)
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal trd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     result = fst_address_value * snd_parameter * snd_mem_address
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_mem_address? snd_parameter) && (is_mem_address? trd_parameter)
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal snd_parameter
-  #     trd_mem_address = mem_address_2_decimal trd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     @bus.send_ram [@read_op, trd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     trd_address_value = @value
-
-  #     result = fst_address_value * snd_address_value * trd_address_value
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_mem_address? snd_parameter) && (trd_parameter.is_a? Integer)
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     result = fst_address_value * snd_address_value * trd_parameter
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_mem_address? snd_parameter) && (is_register? trd_parameter)
-  #     register_value = instance_variable_get("@#{trd_parameter}")
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal snd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     result = fst_address_value * snd_address_value * register_value
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_register? snd_parameter) && (is_register? trd_parameter)
-  #     mem_address = mem_address_2_decimal fst_parameter
-  #     fst_register_value = instance_variable_get("@#{snd_parameter}")
-  #     snd_register_value = instance_variable_get("@#{trd_parameter}")
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = address_value * fst_register_value * snd_register_value
-
-  #     @bus.send_ram [@write_op, mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_register? snd_parameter) && (is_mem_address? trd_parameter)
-  #     register_value = instance_variable_get("@#{snd_parameter}")
-  #     fst_mem_address = mem_address_2_decimal fst_parameter
-  #     snd_mem_address = mem_address_2_decimal trd_parameter
-
-  #     @bus.send_ram [@read_op, fst_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     fst_address_value = @value
-
-  #     @bus.send_ram [@read_op, snd_mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     snd_address_value = @value
-
-  #     result = fst_address_value * register_value * snd_address_value
-
-  #     @bus.send_ram [@write_op, fst_mem_address + 4, result]
-  #     @ram.receive_ram
-  #   elsif (is_mem_address? fst_parameter) && (is_register? snd_parameter) && (trd_parameter.is_a? Integer)
-  #     mem_address = mem_address_2_decimal fst_parameter
-  #     register_value = instance_variable_get("@#{snd_parameter}")
-
-  #     @bus.send_ram [@read_op, mem_address + 4, 0]
-  #     @ram.receive_ram
-  #     receive_cpu
-  #     address_value = @value
-
-  #     result = address_value * register_value * trd_parameter
-
-  #     @bus.send_ram [@write_op, mem_address + 4, result]
-  #     @ram.receive_ram
-  #   else
-  #     abort 'parametros invalidos'
-  #   end
-  # end
-
   def new_execute_inc(parameter)
     puts "new_execute_inc #parameter : #{parameter}"
     write_value(parameter, (read_value parameter) + 1)
@@ -601,7 +210,6 @@ class CPU
       instance_variable_set("@#{param}", value)
     else
       mem_address = (param.is_a? String) ? (mem_address_2_decimal param) : param 
-
       puts " ### writing to mem_address : #{mem_address + 4}"
       @bus.send_ram [@write_op, mem_address + 4, value]
       @ram.receive_ram
@@ -611,15 +219,8 @@ class CPU
   def is_register?(parameter)
     return false unless parameter
 
-    parameter == :A || parameter == :B ||
-    parameter == :C || parameter == :D
+    [:A, :B, :C, :D].include? parameter
   end
-
-  # def is_register?(parameter)
-  #   return false unless parameter
-
-  #   [:A, :B, :C, :D].include? parameter
-  # end
 
   def is_mem_address?(parameter)
     return false unless parameter.is_a? String
@@ -629,5 +230,19 @@ class CPU
 
   def is_instruction?(signal)
     signal.is_a?(Array)
+  end
+
+  def is_interruption?(parameter)
+    parameter.is_a?(Array) && parameter[0] == @interruption
+  end
+
+  def on_cache(instruction)
+    !@ram_to_cache[instruction].nil? 
+  end
+
+  def use_instruction_from_cache(instruction_index)
+    puts "\e[30m use_instruction_from_cache : #{@ram[instruction_index]} \e[0m"
+    @instruction = convert_to_decimal @instruction
+    @instruction = decode_instruction @instruction 
   end
 end

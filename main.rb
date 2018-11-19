@@ -1,3 +1,4 @@
+require 'pry'
 require "./parser"
 require "./encoder"
 require "./io_module"
@@ -8,14 +9,13 @@ require "./cpu"
 clock = 1000
 bandwidth = 1000
 word_size = 64
-bufferSize = 64
-bus_size = 32
+bufferSize = 1000
+bus_size = 1000
 ram_size = 128
 read_op = 100010
 write_op = 100011
 
-
-
+abort "Banda é maior que barramento" if bandwidth > bus_size
 
 
 instructions = []
@@ -25,17 +25,13 @@ end
 
 tokens = Parser.new.tokenize instructions
 
-# tokens.each do |t|
-#   p t
-# end
+# tokens.each { |token| p token  }
 
 bytecode = Encoder.new.encode tokens
 
 puts "\n\n"
 
-# bytecode.each do |bt|
-#   p bt
-# end
+# bytecode.each do { |bt| p bt }
 
 bus = Bus.new bus_size
 ram = Ram.new ram_size, bus
@@ -43,20 +39,31 @@ cpu = CPU.new bus, ram
 io_module = IOModule.new bufferSize, bus
 io_module.getEncodedInstructions bytecode
 
-# loop
-loop {
-  sleep (clock / 1000)
-  break if io_module.instructions.empty?
-  puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
-  io_module.send_ram write_op
-  ram.receive_ram
-  io_module.send_interruption
-  cpu.receive_cpu
-  # cpu calls send_ram internally to ask for instruction
-  ram.receive_ram
-  cpu.receive_cpu # get requested instruction
-  cpu.execute_instruction
-}
+puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
+io_module.send_ram write_op
+ram.receive_ram
+io_module.send_interruption
+binding.pry
+cpu.receive_cpu
+exit
+# # cpu calls send_ram internally to ask for instruction
+# ram.receive_ram
+# cpu.receive_cpu # get requested instruction
+# cpu.execute_instruction
+
+# loop {
+#   sleep (clock / 1000)
+#   break if io_module.instructions.empty?
+#   puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
+#   io_module.send_ram write_op
+#   ram.receive_ram
+#   io_module.send_interruption
+#   cpu.receive_cpu
+#   # cpu calls send_ram internally to ask for instruction
+#   ram.receive_ram
+#   cpu.receive_cpu # get requested instruction
+#   cpu.execute_instruction
+# }
 
 puts <<~HEREDOC
 
@@ -73,6 +80,6 @@ puts <<~HEREDOC
 
 HEREDOC
 
-ram.ram.each_with_index { |a, index|
-  puts "#{index} : #{a}"
-}
+# ram.ram.each_with_index { |a, index|
+#   puts "#{index} : #{a}"
+# }
