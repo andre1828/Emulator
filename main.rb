@@ -43,7 +43,6 @@ puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
 io_module.send_ram write_op
 ram.receive_ram
 io_module.send_interruption
-binding.pry
 cpu.receive_cpu
 exit
 # # cpu calls send_ram internally to ask for instruction

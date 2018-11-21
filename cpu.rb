@@ -14,22 +14,33 @@ class CPU
     @C = 0
     @D = 0
     @pi
-    @cache = []
-    @ram_to_cache = {}
+    @cache = [[11, 1010, 1011], [11, 1011, 1100], [11, 1010, 1011], [11, 1010, 1011], [11, 1010, 1011]]
+    @ram_to_cache = {0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4}
   end
 
   def receive_cpu
     received = @bus.receive_cpu
     puts "cpu : received #{received}"
     if received[0] == @interruption
-      puts 'cpu : got interruption'
-      if on_cache received[1]
-        puts "\e[96m  instruction is cached \e[0m"
-        use_instruction_from_cache(received[1])
-      else
-        puts "\e[96m  instruction is NOT cached \e[0m"
-        # @bus.send_ram [@read_op, 0, 3]
+      puts 'cpu : got interruptions'
+      interruptions = received[1 .. -1]
+      interruptions.each do |interruption|
+        instruction_index = interruption[1].to_s.to_i(2)
+        if on_cache instruction_index
+          cache_index = @ram_to_cache[instruction_index] 
+          cached_instruction = @cache[cache_index]
+          p decode_instruction(convert_to_decimal cached_instruction)
+        else
+          puts "\e[96m  instruction is NOT cached \e[0m"
+        end
       end
+      # if on_cache received[1]
+      #   puts "\e[96m  instruction is cached \e[0m"
+      #   use_instruction_from_cache(received[1])
+      # else
+      #   puts "\e[96m  instruction is NOT cached \e[0m"
+      #   # @bus.send_ram [@read_op, 0, 3]
+      # end
     elsif is_instruction? received # ram sent the requested instruction
       puts "\e[36m received : #{received} \e[0m"
       puts 'cpu : got the requested instruction'
@@ -232,12 +243,12 @@ class CPU
     signal.is_a?(Array)
   end
 
-  def is_interruption?(parameter)
-    parameter.is_a?(Array) && parameter[0] == @interruption
-  end
+  # def is_interruption?(parameter)
+  #   parameter.is_a?(Array) && parameter[0] == @interruption
+  # end
 
-  def on_cache(instruction)
-    !@ram_to_cache[instruction].nil? 
+  def on_cache(index)
+    !@ram_to_cache[index].nil? 
   end
 
   def use_instruction_from_cache(instruction_index)
