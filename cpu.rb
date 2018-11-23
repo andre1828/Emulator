@@ -22,16 +22,7 @@ class CPU
     puts "cpu : received #{received}"
     if received[0] == @interruption
       puts 'cpu : got interruptions'
-      interruptions = received[1..-1]
-      interruptions.each do |interruption|
-        instruction_index = interruption[1].to_s.to_i(2)
-        if on_cache instruction_index
-          instruction = get_cached_instruction(instruction_index)
-          
-        else
-          puts "\e[96m  instruction is NOT cached \e[0m"
-        end
-      end
+      @interruptions = received[1..-1]
       # if on_cache received[1]
       #   puts "\e[96m  instruction is cached \e[0m"
       #   use_instruction_from_cache(received[1])
@@ -49,7 +40,7 @@ class CPU
       else
         @pi += 1
       end
-      puts "cpu : current instruction #{@instruction}. current pi \e[91m#{@pi}\e[0m"
+      # puts "cpu : current instruction #{@instruction}. current pi \e[91m#{@pi}\e[0m"
       @instruction = convert_to_decimal @instruction
       @instruction = decode_instruction @instruction
       puts "decoded instruction #{@instruction}"
@@ -165,7 +156,21 @@ class CPU
   end
 
   def execute_instruction
-    puts "executing #{@instruction}"
+    # puts "executing #{@instruction}"
+    instruction_index = (@interruptions.shift)[1]
+    if on_cache instruction_index
+      @instruction = get_cached_instruction instruction_index
+      puts "execute_instruction : got instruction from cache"
+    else
+      @bus.send_ram [@read_op, instruction_index]
+      @ram.receive_ram
+      receive_cpu
+      puts "execute_instruction : got instruction from cache"
+    end
+
+    puts "execute_instruction : @instruction ->  #{@instruction}"
+    return
+    
     case @instruction[0]
     when :inc
       new_execute_inc @instruction[1]
@@ -258,6 +263,6 @@ class CPU
   def use_instruction_from_cache(instruction_index)
     puts "\e[30m use_instruction_from_cache : #{@ram[instruction_index]} \e[0m"
     @instruction = convert_to_decimal @instruction
-    @instruction = decode_instruction @instruction
+    decode_instruction @instruction
   end
 end
