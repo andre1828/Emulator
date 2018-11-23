@@ -164,42 +164,40 @@ class CPU
     else
       @bus.send_ram [@read_op, instruction_index]
       @ram.receive_ram
-      receive_cpu
+      receive_cpu      
       puts "execute_instruction : got instruction from cache"
     end
 
-    puts "execute_instruction : @instruction ->  #{@instruction}"
-    return
     
     case @instruction[0]
     when :inc
-      new_execute_inc @instruction[1]
+      execute_inc @instruction[1]
     when :add
-      new_execute_add @instruction[1], @instruction[2]
+      execute_add @instruction[1], @instruction[2]
     when :mov
-      new_execute_mov @instruction[1], @instruction[2]
+      execute_mov @instruction[1], @instruction[2]
     when :imul
-      new_execute_imul @instruction[1], @instruction[2], @instruction[3]
+      execute_imul @instruction[1], @instruction[2], @instruction[3]
     else
       abort 'Invalid instruction'
     end
   end
 
-  def new_execute_inc(parameter)
-    puts "new_execute_inc #parameter : #{parameter}"
+  def execute_inc(parameter)
+    puts "execute_inc #parameter : #{parameter}"
     write_value(parameter, (read_value parameter) + 1)
     puts "#### ram size : #{@ram.ram.count}"
   end
 
-  def new_execute_add(fst_parameter, snd_parameter)
+  def execute_add(fst_parameter, snd_parameter)
     write_value(fst_parameter, (read_value fst_parameter) + (read_value snd_parameter))
   end
 
-  def new_execute_mov(fst_parameter, snd_parameter)
+  def execute_mov(fst_parameter, snd_parameter)
     write_value(fst_parameter, (read_value snd_parameter))
   end
 
-  def new_execute_imul(fst_parameter, snd_parameter, trd_parameter)
+  def execute_imul(fst_parameter, snd_parameter, trd_parameter)
     write_value(fst_parameter, (read_value fst_parameter) * (read_value snd_parameter) * (read_value trd_parameter))
   end
 
