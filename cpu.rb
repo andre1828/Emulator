@@ -1,11 +1,10 @@
 class CPU
-
-  attr_accessor :A,:B,:C,:D
+  attr_accessor :A, :B, :C, :D
   def initialize(bus, ram)
     @read_op = 100_010 # 34
     @write_op = 100_011
     @interruption = 100_001 # 33
-    @instruction
+    @instruction = []
     @value
     @bus = bus
     @ram = ram
@@ -15,7 +14,7 @@ class CPU
     @D = 0
     @pi
     @cache = [[11, 1010, 1011], [11, 1011, 1100], [11, 1010, 1011], [11, 1010, 1011], [11, 1010, 1011]]
-    @ram_to_cache = {0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4}
+    @ram_to_cache = { 0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4 }
   end
 
   def receive_cpu
@@ -23,13 +22,12 @@ class CPU
     puts "cpu : received #{received}"
     if received[0] == @interruption
       puts 'cpu : got interruptions'
-      interruptions = received[1 .. -1]
+      interruptions = received[1..-1]
       interruptions.each do |interruption|
         instruction_index = interruption[1].to_s.to_i(2)
         if on_cache instruction_index
-          cache_index = @ram_to_cache[instruction_index] 
-          cached_instruction = @cache[cache_index]
-          p decode_instruction(convert_to_decimal cached_instruction)
+          instruction = get_cached_instruction(instruction_index)
+          
         else
           puts "\e[96m  instruction is NOT cached \e[0m"
         end
@@ -55,7 +53,7 @@ class CPU
       @instruction = convert_to_decimal @instruction
       @instruction = decode_instruction @instruction
       puts "decoded instruction #{@instruction}"
-      
+
     else
       puts 'cpu : got requested value'
       @value = received
@@ -200,7 +198,7 @@ class CPU
     write_value(fst_parameter, (read_value fst_parameter) * (read_value snd_parameter) * (read_value trd_parameter))
   end
 
-  def read_value param
+  def read_value(param)
     return param if param.is_a? Integer
 
     if is_register? param
@@ -214,13 +212,13 @@ class CPU
     end
   end
 
-  def write_value param, value
+  def write_value(param, value)
     puts "##########  write_value : write #{value} to #{param}"
     # abort 'Cannot write to integer' if param.is_a? Integer
     if is_register? param
       instance_variable_set("@#{param}", value)
     else
-      mem_address = (param.is_a? String) ? (mem_address_2_decimal param) : param 
+      mem_address = param.is_a? String ? (mem_address_2_decimal param) : param
       puts " ### writing to mem_address : #{mem_address + 4}"
       @bus.send_ram [@write_op, mem_address + 4, value]
       @ram.receive_ram
@@ -230,7 +228,7 @@ class CPU
   def is_register?(parameter)
     return false unless parameter
 
-    [:A, :B, :C, :D].include? parameter
+    %i[A B C D].include? parameter
   end
 
   def is_mem_address?(parameter)
@@ -248,12 +246,18 @@ class CPU
   # end
 
   def on_cache(index)
-    !@ram_to_cache[index].nil? 
+    !@ram_to_cache[index].nil?
+  end
+
+  def get_cached_instruction(instruction_index)
+    cache_index = @ram_to_cache[instruction_index]
+    cached_instruction = @cache[cache_index]
+    decode_instruction(convert_to_decimal(cached_instruction))
   end
 
   def use_instruction_from_cache(instruction_index)
     puts "\e[30m use_instruction_from_cache : #{@ram[instruction_index]} \e[0m"
     @instruction = convert_to_decimal @instruction
-    @instruction = decode_instruction @instruction 
+    @instruction = decode_instruction @instruction
   end
 end

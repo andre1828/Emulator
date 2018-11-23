@@ -48,7 +48,7 @@ exit
 # # cpu calls send_ram internally to ask for instruction
 # ram.receive_ram
 # cpu.receive_cpu # get requested instruction
-# cpu.execute_instruction
+# cpu.execute_instruction  #  will be 5.times { cpu.execute_instruction }
 
 # loop {
 #   sleep (clock / 1000)
