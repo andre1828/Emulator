@@ -1,4 +1,6 @@
-class CPU
+require './cache'
+
+class Cpu
   attr_accessor :A, :B, :C, :D
   def initialize(bus, ram)
     @read_op = 100_010 # 34
@@ -13,8 +15,7 @@ class CPU
     @C = 0
     @D = 0
     @pi
-    @cache = [[11, 1010, 1011], [11, 1011, 1100], [11, 1010, 1011], [11, 1010, 1011], [11, 1010, 1011]]
-    @ram_to_cache = { 0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4 }
+    @cache = Cache.new
   end
 
   def receive_cpu
@@ -157,15 +158,16 @@ class CPU
 
   def execute_instruction
     # puts "executing #{@instruction}"
-    instruction_index = (@interruptions.shift)[1]
-    if on_cache instruction_index
-      @instruction = get_cached_instruction instruction_index
-      puts "execute_instruction : got instruction from cache"
+    instruction_index = (@interruptions.shift)[1].to_s.to_i(2)
+    if @cache.on_cache instruction_index
+      @instruction = @cache.get_cached_instruction instruction_index
+      puts "\e[94m execute_instruction : got instruction from cache \e[0m"
     else
       @bus.send_ram [@read_op, instruction_index]
       @ram.receive_ram
-      receive_cpu      
-      puts "execute_instruction : got instruction from cache"
+      receive_cpu
+      puts "\e[41m execute_instruction : got instruction from ram \e[0m"
+      @cache.cache_instruction @instruction, instruction_index
     end
 
     
@@ -247,20 +249,4 @@ class CPU
   # def is_interruption?(parameter)
   #   parameter.is_a?(Array) && parameter[0] == @interruption
   # end
-
-  def on_cache(index)
-    !@ram_to_cache[index].nil?
-  end
-
-  def get_cached_instruction(instruction_index)
-    cache_index = @ram_to_cache[instruction_index]
-    cached_instruction = @cache[cache_index]
-    decode_instruction(convert_to_decimal(cached_instruction))
-  end
-
-  def use_instruction_from_cache(instruction_index)
-    puts "\e[30m use_instruction_from_cache : #{@ram[instruction_index]} \e[0m"
-    @instruction = convert_to_decimal @instruction
-    decode_instruction @instruction
-  end
 end

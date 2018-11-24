@@ -14,9 +14,7 @@ bus_size = 1000
 ram_size = 128
 read_op = 100010
 write_op = 100011
-
-abort "Banda é maior que barramento" if bandwidth > bus_size
-
+ abort "Banda é maior que barramento" if bandwidth > bus_size
 
 instructions = []
 File.open("code.c").each do |line|
@@ -35,7 +33,7 @@ puts "\n\n"
 
 bus = Bus.new bus_size
 ram = Ram.new ram_size, bus
-cpu = CPU.new bus, ram
+cpu = Cpu.new bus, ram
 io_module = IOModule.new bufferSize, bus
 io_module.getEncodedInstructions bytecode
 
@@ -44,8 +42,8 @@ io_module.send_ram write_op
 ram.receive_ram
 io_module.send_interruption
 cpu.receive_cpu
-cpu.execute_instruction
-# 5.times { cpu.execute_instruction }
+# cpu.execute_instruction
+5.times { cpu.execute_instruction }
 exit
 # # cpu calls send_ram internally to ask for instruction
 # ram.receive_ram
