@@ -14,7 +14,8 @@ bus_size = 1000
 ram_size = 128
 read_op = 100010
 write_op = 100011
- abort "Banda é maior que barramento" if bandwidth > bus_size
+
+abort "Banda é maior que barramento" if bandwidth > bus_size
 
 instructions = []
 File.open("code.c").each do |line|
@@ -51,7 +52,7 @@ exit
 # cpu.execute_instruction  #  will be 5.times { cpu.execute_instruction }
 
 # loop {
-#   sleep (clock / 1000)
+#   sleep (clock / bandwidth)
 #   break if io_module.instructions.empty?
 #   puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
 #   io_module.send_ram write_op
