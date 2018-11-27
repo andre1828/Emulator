@@ -9,6 +9,7 @@ class Cache
 
   def get_cached_instruction(instruction_index)
     cache_index = @ram_to_cache[instruction_index]
+    @cache[cache_index][:time] = Time.now.nsec 
     cached_instruction = @cache[cache_index][:instruction]
     decode_instruction(convert_to_decimal(cached_instruction))
   end
