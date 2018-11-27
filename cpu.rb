@@ -15,7 +15,7 @@ class Cpu
     @C = 0
     @D = 0
     @pi
-    @cache = Cache.new
+    @cache = Cache.new ram.ram.count
   end
 
   def receive_cpu
