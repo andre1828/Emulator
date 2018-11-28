@@ -45,7 +45,6 @@ class Cpu
       @instruction = convert_to_decimal @instruction
       @instruction = decode_instruction @instruction
       puts "decoded instruction #{@instruction}"
-
     else
       puts 'cpu : got requested value'
       @value = received
@@ -160,6 +159,7 @@ class Cpu
     # puts "executing #{@instruction}"
     # check PI register
     instruction_index = (@interruptions.shift)[1].to_s.to_i(2)
+    puts "\e[31m current PI #{@pi}, current interruption #{ @interruptions[@pi ? @pi : 0] } \e[0m"
     if @cache.on_cache instruction_index
       @instruction = @cache.get_cached_instruction instruction_index
       puts "\e[94m execute_instruction : got instruction from cache \e[0m"

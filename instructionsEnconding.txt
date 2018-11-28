@@ -33,3 +33,15 @@ imul address, address, register 29
 imul address, register, register 30
 imul address, register, address 31
 imul address, register, integer 32
+
+manter lista de interrupçoes 
+usar o PI para recuperar uma interrupção
+guardar o PI da instrução que aparece após o label    
+usar PI para recuperar interrupçao e obter instruçao
+executar instrução
+
+
+resposta : 
+cpu não armazena interrupçoes (mover lista para o barramento)
+usar estrutura dentro da cpu para armazenar o endereço das instruções do loop, e percorrer essa estrutura para simular o loop
+O PI é incrementado após execução de uma instrução  
