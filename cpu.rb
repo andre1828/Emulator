@@ -158,6 +158,7 @@ class Cpu
 
   def execute_instruction
     # puts "executing #{@instruction}"
+    # check PI register
     instruction_index = (@interruptions.shift)[1].to_s.to_i(2)
     if @cache.on_cache instruction_index
       @instruction = @cache.get_cached_instruction instruction_index
