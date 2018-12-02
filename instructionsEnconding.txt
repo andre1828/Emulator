@@ -42,6 +42,6 @@ executar instrução
 
 
 resposta : 
-cpu não armazena interrupçoes (mover lista para o barramento)
+cpu não armazena interrupçoes (mover lista para o barramento ou modulo de e/s)
 usar estrutura dentro da cpu para armazenar o endereço das instruções do loop, e percorrer essa estrutura para simular o loop
 O PI é incrementado após execução de uma instrução  

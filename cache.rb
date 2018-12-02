@@ -2,7 +2,7 @@ class Cache
   attr_accessor :ram_to_cache
 
   def initialize(ram_size)
-    @cache = Array.new(ram_size * 0.25) #[[11, 1010, 1011], [11, 1011, 1100], [11, 1010, 1011], [11, 1010, 1011], [11, 1010, 1011]]
+    @cache = Array.new(ram_size * 0.25)
 		@cache_usage_boundary = (@cache.count * 0.80).ceil
 		@ram_to_cache = {} #{ 0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4 }
   end
@@ -24,7 +24,14 @@ class Cache
     @ram_to_cache[instruction_index] = instruction_index
     # p "cache_instruction : @cache #{@cache}"
 		# TODO check if at 80% capacity
-		# lru if @cache.compact.count == @cache_usage_boundary
+		lru (instruction, instruction_index) if @cache.compact.count == @cache_usage_boundary
+  end
+
+  def lru instruction, instruction_index
+    #  TODO  test method
+    timestamps = @cache.map { |i| i[:time] }
+    oldest_timestamp_index = timestamps.find_index(timestamps.min)
+    @cache[oldest_timestamp_index] = {instruction: instruction, time: Time.now.nsec}
   end
 
   def convert_to_decimal(instruction)
