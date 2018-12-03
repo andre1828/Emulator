@@ -34,6 +34,48 @@ imul address, register, register 30
 imul address, register, address 31
 imul address, register, integer 32
 
+interruption 33
+read operation 34
+write operation 35
+
+lbl integer 36
+
+register < register 37
+register > register 38
+register <= register 39 
+register >= register 40
+register == register 41 
+
+register < integer 42
+register > integer 43
+register <= integer 44
+register >= integer 45
+register == integer 46
+
+address < address 47
+address > address 48
+address <= address 49
+address >= address 50
+address == address 51
+
+address < integer 52
+address > integer 53
+address <= integer 54
+address >= integer 55
+address == integer 56
+
+register < address 57
+register > address 58
+register <= address 59
+register >= address 60
+register == address 61
+
+address < register 62
+address > register 63
+address <= register 64
+address >= register 65
+address == register 66
+
 manter lista de interrupçoes 
 usar o PI para recuperar uma interrupção
 guardar o PI da instrução que aparece após o label    

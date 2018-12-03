@@ -1,12 +1,12 @@
-# create one number for each profile of instruction 
- 
- class Encoder
+# create one number for each instruction profile
+
+class Encoder
   @word = 16 / 8
 
   def encode instructions
     byte_instructions = []
     instructions.each do |instr| 
-      byte_instructions << self.to_byte_array(instr)
+      byte_instructions << to_byte_array(instr)
     end
 
     byte_instructions
@@ -14,15 +14,27 @@
 
 
   def to_byte_array instruction
+    binding.pry
     byte_array = []
+
+    if is_loop?(instruction)
+      return encode_loop(instruction)
+    else
+      return encode_lbl(instruction)
+    end 
+
     # mnemonic
     byte_array << encode_mnemonic(instruction[0], instruction)
 
     #first parameter 
     if is_register? instruction[1]
       byte_array << encode_register(instruction[1])
-    else
+    elsif is_mem_address? instruction[1]
       byte_array << encode_mem_address(instruction[1])
+    elsif is_integer? instruction[1]
+      byte_array << encode_integer(instruction[1])
+    else
+      raise ArgumentError.new "primeiro parametro invalido em #{instruction}"
     end
 
     if instruction[2]
@@ -44,6 +56,8 @@
         byte_array << encode_mem_address(instruction[3])
       elsif is_integer? instruction[3]
         byte_array << encode_integer(instruction[3])
+      elsif is_loop? instruction[3]
+        byte_array << encode_loop(instruction[3])
       else
         raise ArgumentError.new "terceiro parametro invalido em #{instruction}"
       end
@@ -70,8 +84,13 @@
     !parameter.scan(/^([0-9]|[0-9][0-9]|[0-2][0-5][0-5])$/).empty?
   end
 
+  def is_loop? parameter 
+    return false if !parameter
+    parameter.include? "jmp" 
+  end
+
   def encode_mnemonic mnemonic, instruction
-    
+    binding.pry
     case mnemonic
         when "inc" 
           if(is_register? instruction[1]) 
@@ -152,7 +171,9 @@
           else
             abort "opcao invalida de instrucao imul"
           end
-    end
+        when "lbl"
+          36.to_s(2).to_i
+        end
   end
 
   def encode_register register
@@ -174,5 +195,11 @@
 
   def encode_integer integer
     integer.to_i.to_s(2).to_i  
+  end
+
+  def encode_loop loop
+    # TODO implement encode loop
+    byte_array = []
+    byte_array << (encode_register loop[0]) if is_register? loop[0]
   end
 end

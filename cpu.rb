@@ -3,9 +3,7 @@ require './cache'
 class Cpu
   attr_accessor :A, :B, :C, :D
   def initialize(bus, ram)
-    @read_op = 100_010 # 34
-    @write_op = 100_011
-    @interruption = 100_001 # 33
+    @interruption
     @instruction = []
     @value
     @bus = bus
@@ -21,15 +19,15 @@ class Cpu
   def receive_cpu
     received = @bus.receive_cpu
     puts "cpu : received #{received}"
-    if received[0] == @interruption
-      puts 'cpu : got interruptions'
-      @interruptions = received[1..-1]
+    if received[0] == INTERRUPTION
+      puts 'cpu : got interruption'
+      @interruption = received[1]
       # if on_cache received[1]
       #   puts "\e[96m  instruction is cached \e[0m"
       #   use_instruction_from_cache(received[1])
       # else
       #   puts "\e[96m  instruction is NOT cached \e[0m"
-      #   # @bus.send_ram [@read_op, 0, 3]
+      #   # @bus.send_ram [READ_OP, 0, 3]
       # end
     elsif is_instruction? received # ram sent the requested instruction
       puts "\e[36m received : #{received} \e[0m"
@@ -158,13 +156,13 @@ class Cpu
   def execute_instruction
     # puts "executing #{@instruction}"
     # check PI register
-    instruction_index = (@interruptions.shift)[1].to_s.to_i(2)
-    puts "\e[31m current PI #{@pi}, current interruption #{ @interruptions[@pi ? @pi : 0] } \e[0m"
+    instruction_index = @interruption[1].to_s.to_i(2)
+    puts "\e[31m current PI #{@pi}\e[0m"
     if @cache.on_cache instruction_index
       @instruction = @cache.get_cached_instruction instruction_index
       puts "\e[94m execute_instruction : got instruction from cache \e[0m"
     else
-      @bus.send_ram [@read_op, instruction_index]
+      @bus.send_ram [READ_OP, instruction_index]
       @ram.receive_ram
       receive_cpu
       puts "\e[41m execute_instruction : got instruction from ram \e[0m"
@@ -181,6 +179,11 @@ class Cpu
       execute_mov @instruction[1], @instruction[2]
     when :imul
       execute_imul @instruction[1], @instruction[2], @instruction[3]
+    when :lbl
+      binding.pry
+      execute_lbl @instruction[1]
+    when :loop
+      execute_loop @instruction[1]
     else
       abort 'Invalid instruction'
     end
@@ -211,7 +214,7 @@ class Cpu
       instance_variable_get "@#{param}"
     else
       mem_address = mem_address_2_decimal param
-      @bus.send_ram [@read_op, mem_address + 4, 0]
+      @bus.send_ram [READ_OP, mem_address + 4, 0]
       @ram.receive_ram
       receive_cpu
       @value
@@ -226,7 +229,6 @@ class Cpu
     else
       mem_address = param.is_a? String ? (mem_address_2_decimal param) : param
       puts " ### writing to mem_address : #{mem_address + 4}"
-      @bus.send_ram [@write_op, mem_address + 4, value]
       @ram.receive_ram
     end
   end

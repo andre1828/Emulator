@@ -1,7 +1,7 @@
 class IOModule
   attr_accessor :instructions
   def initialize(bufferSize, bus)
-    @interruption = 100_001 # 33
+    @interruption_queue = []
     @bufferSize = bufferSize
     @bus = bus
     @instructions
@@ -21,6 +21,6 @@ class IOModule
   end
 
   def send_interruption
-    @bus.send_cpu [@interruption, [@interruption, 0], [@interruption, 1], [@interruption, 10], [@interruption, 11], [@interruption, 100]]
+    @bus.send_cpu [INTERRUPTION, [INTERRUPTION, 0]]
   end
 end

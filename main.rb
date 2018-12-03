@@ -1,4 +1,5 @@
 require 'pry'
+require "./constants"
 require "./parser"
 require "./encoder"
 require "./io_module"
@@ -43,8 +44,7 @@ io_module.send_ram write_op
 ram.receive_ram
 io_module.send_interruption
 cpu.receive_cpu
-# cpu.execute_instruction
-5.times { cpu.execute_instruction }
+cpu.execute_instruction
 exit
 # # cpu calls send_ram internally to ask for instruction
 # ram.receive_ram

@@ -1,13 +1,10 @@
 // inc 0x0F
 // inc D
-add A, B
-add B, C
-add A, B
-add A, B
-add A, B
-// label 1
+// add A, B
+// add B, C
+// lbl 1
 // add A, 2
-// A < 20 : jmp 1 : brk
+A < 10 : jmp 1 : void
 // add A, 0x00
 // add 0x01, B
 // add 0x0A, 0x0B
