@@ -4,7 +4,7 @@
 // add B, C
 // lbl 1
 // add A, 2
-A < 10 : jmp 1 : void
+0x0F < 10 : jmp 1 : void
 // add A, 0x00
 // add 0x01, B
 // add 0x0A, 0x0B

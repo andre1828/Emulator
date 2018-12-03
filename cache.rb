@@ -23,7 +23,6 @@ class Cache
     @cache[instruction_index] = {instruction: instruction, time: Time.now.nsec}
     @ram_to_cache[instruction_index] = instruction_index
     # p "cache_instruction : @cache #{@cache}"
-    # TODO check if at 80% capacity
     lru(instruction, instruction_index) if @cache.compact.count == @cache_usage_boundary
   end
 
