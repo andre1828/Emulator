@@ -199,8 +199,67 @@ class Encoder
     byte_array = []
 
     if (is_register? loop[0] && loop[1] == '<' && is_register? loop[2])
-      
+      byte_array << 37.to_s(2).to_i
+      byte_array << encode_register(loop[0])
+      byte_array << encode_register(loop[2])
+    elsif (is_register? loop[0] && loop[1] == '>' && is_register? loop[2])
+      byte_array << 38.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '<=' && is_register? loop[2])
+      byte_array << 39.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '>=' && is_register? loop[2])
+      byte_array << 40.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '==' && is_register? loop[2])
+      byte_array << 41.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '<' && is_integer? loop[2])
+      byte_array << 42.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '>' && is_integer? loop[2])
+      byte_array << 43.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '<=' && is_integer? loop[2])
+      byte_array << 44.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '>=' && is_integer? loop[2])
+      byte_array << 45.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '==' && is_integer? loop[2])
+      byte_array << 46.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '<' && is_mem_address? loop[2])
+      byte_array << 47.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '>' && is_mem_address? loop[2])
+      byte_array << 48.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '<=' && is_mem_address? loop[2])
+      byte_array << 49.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '>=' && is_mem_address? loop[2])
+      byte_array << 50.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '==' && is_mem_address? loop[2])
+      byte_array << 51.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '<' && is_integer? loop[2])
+      byte_array << 52.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '>' && is_integer? loop[2])
+      byte_array << 53.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '<=' && is_integer? loop[2])
+      byte_array << 54.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '>=' && is_integer? loop[2])
+      byte_array << 55.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '==' && is_integer? loop[2])
+      byte_array << 56.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '<' && is_mem_address? loop[2])
+      byte_array << 57.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '>' && is_mem_address? loop[2])
+      byte_array << 58.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '<=' && is_mem_address? loop[2])
+      byte_array << 59.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '>=' && is_mem_address? loop[2])
+      byte_array << 60.to_s(2).to_i
+    elsif (is_register? loop[0] && loop[1] == '==' && is_mem_address? loop[2])
+      byte_array << 61.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '<' && is_register? loop[2])
+      byte_array << 62.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '>' && is_register? loop[2])
+      byte_array << 63.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '<=' && is_register? loop[2])
+      byte_array << 64.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '>=' && is_register? loop[2])
+      byte_array << 64.to_s(2).to_i
+    elsif (is_mem_address? loop[0] && loop[1] == '==' && is_register? loop[2])
+      byte_array << 66.to_s(2).to_i
     end
-    binding.pry
   end
 end
