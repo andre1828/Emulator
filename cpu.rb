@@ -1,7 +1,8 @@
-require './cache'
+require "./cache"
 
 class Cpu
   attr_accessor :A, :B, :C, :D
+
   def initialize(bus, ram)
     @interruption
     @instruction = []
@@ -20,7 +21,7 @@ class Cpu
     received = @bus.receive_cpu
     puts "cpu : received #{received}"
     if received[0] == INTERRUPTION
-      puts 'cpu : got interruption'
+      puts "cpu : got interruption"
       @interruption = received[1]
       # if on_cache received[1]
       #   puts "\e[96m  instruction is cached \e[0m"
@@ -31,7 +32,7 @@ class Cpu
       # end
     elsif is_instruction? received # ram sent the requested instruction
       puts "\e[36m received : #{received} \e[0m"
-      puts 'cpu : got the requested instruction'
+      puts "cpu : got the requested instruction"
       @instruction = received
       puts "instruction : #{@instruction}"
       if !@pi
@@ -44,7 +45,7 @@ class Cpu
       @instruction = decode_instruction @instruction
       puts "decoded instruction #{@instruction}"
     else
-      puts 'cpu : got requested value'
+      puts "cpu : got requested value"
       @value = received
     end
   end
@@ -90,17 +91,17 @@ class Cpu
     when 17
       decoded_instruction << :imul << (decode_register instruction[1]) << (decode_register instruction[2]) << instruction[3]
     when 18
-      decoded_instruction << :imul << (decode_register instruction[1]) <<  (decode_mem_address instruction[2]) << (decode_register instruction[3])
+      decoded_instruction << :imul << (decode_register instruction[1]) << (decode_mem_address instruction[2]) << (decode_register instruction[3])
     when 19
-      decoded_instruction << :imul << (decode_register instruction[1]) <<  (decode_mem_address instruction[2]) << instruction[3]
+      decoded_instruction << :imul << (decode_register instruction[1]) << (decode_mem_address instruction[2]) << instruction[3]
     when 20
-      decoded_instruction << :imul << (decode_register instruction[1]) <<  (decode_mem_address instruction[2]) << (decode_mem_address instruction[3])
+      decoded_instruction << :imul << (decode_register instruction[1]) << (decode_mem_address instruction[2]) << (decode_mem_address instruction[3])
     when 21
-      decoded_instruction << :imul << (decode_register instruction[1]) <<  instruction[2] << instruction[3]
+      decoded_instruction << :imul << (decode_register instruction[1]) << instruction[2] << instruction[3]
     when 22
-      decoded_instruction << :imul << (decode_register instruction[1]) <<  instruction[2] << (decode_register instruction[3])
+      decoded_instruction << :imul << (decode_register instruction[1]) << instruction[2] << (decode_register instruction[3])
     when 23
-      decoded_instruction << :imul << (decode_register instruction[1]) <<  instruction[2] << (decode_mem_address instruction[3])
+      decoded_instruction << :imul << (decode_register instruction[1]) << instruction[2] << (decode_mem_address instruction[3])
     when 24
       decoded_instruction << :imul << (decode_mem_address instruction[1]) << instruction[2] << instruction[3]
     when 25
@@ -119,9 +120,18 @@ class Cpu
       decoded_instruction << :imul << (decode_mem_address instruction[1]) << (decode_register instruction[2]) << (decode_mem_address instruction[3])
     when 32
       decoded_instruction << :imul << (decode_mem_address instruction[1]) << (decode_register instruction[2]) << instruction[3]
-    else
-      abort 'Invalid instruction'
-      end
+    when 36
+      decoded_instruction << :lbl << instruction[1]
+    when 37
+      decoded_instruction.push  :loop ,
+                                decode_register(instruction[1]) ,
+                                :< ,
+                                decode_register(instruction[2]) ,
+                                instruction[3]
+      binding.pry
+    else z
+      abort "Invalid instruction"
+    end
 
     decoded_instruction
   end
@@ -137,12 +147,12 @@ class Cpu
     when 13
       :D
     else
-      abort 'Invalid register'
+      abort "Invalid register"
     end
   end
 
   def decode_mem_address(mem_address)
-    ('0x0' + mem_address.to_s(16)).upcase!
+    ("0x0" + mem_address.to_s(16)).upcase!
   end
 
   def mem_address_2_decimal(mem_address)
@@ -169,7 +179,6 @@ class Cpu
       @cache.cache_instruction @instruction, instruction_index
     end
 
-    
     case @instruction[0]
     when :inc
       execute_inc @instruction[1]
@@ -182,9 +191,9 @@ class Cpu
     when :lbl
       execute_lbl @instruction[1]
     when :loop
-      execute_loop @instruction[1]
+      execute_loop @instruction[1], @instruction[2], @instruction[3], @instruction[4]
     else
-      abort 'Invalid instruction'
+      abort "Invalid instruction"
     end
   end
 
@@ -204,6 +213,26 @@ class Cpu
 
   def execute_imul(fst_parameter, snd_parameter, trd_parameter)
     write_value(fst_parameter, (read_value fst_parameter) * (read_value snd_parameter) * (read_value trd_parameter))
+  end
+
+  def execute_lbl(lbl_value)
+  end
+  
+  def execute_loop(fst_parameter, snd_parameter, trd_parameter, frth_parameter)
+    case snd_parameter
+    when :<
+      if fst_parameter < snd_parameter
+    when :>
+      if fst_parameter > snd_parameter
+    when :<=
+      if fst_parameter <= snd_parameter
+    when :>=
+      if fst_parameter >= snd_parameter
+    when :==
+      if fst_parameter == snd_parameter
+    else
+      abort "Invalid operand #{snd_parameter}"
+    end
   end
 
   def read_value(param)
@@ -241,7 +270,7 @@ class Cpu
   def is_mem_address?(parameter)
     return false unless parameter.is_a? String
 
-    parameter.start_with? '0X'
+    parameter.start_with? "0X"
   end
 
   def is_instruction?(signal)

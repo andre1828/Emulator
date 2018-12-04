@@ -14,7 +14,7 @@ class Encoder
 
   def to_byte_array(instruction)
     byte_array = []
-    binding.pry
+
     if is_loop?(instruction)
       return encode_loop(instruction)
     elsif is_label?(instruction)
@@ -93,7 +93,6 @@ class Encoder
   end
 
   def encode_mnemonic(mnemonic, instruction)
-    binding.pry
     case mnemonic
     when "inc"
       if (is_register? instruction[1])
@@ -200,7 +199,6 @@ class Encoder
   end
 
   def encode_loop(loop)
-    binding.pry
     # TODO implement encode loop
     byte_array = []
 
