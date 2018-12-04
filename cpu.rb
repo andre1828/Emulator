@@ -180,7 +180,6 @@ class Cpu
     when :imul
       execute_imul @instruction[1], @instruction[2], @instruction[3]
     when :lbl
-      binding.pry
       execute_lbl @instruction[1]
     when :loop
       execute_loop @instruction[1]
