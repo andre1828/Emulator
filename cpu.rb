@@ -38,11 +38,11 @@ class Cpu
       puts "cpu : got the requested instruction"
       @instruction = received
       puts "instruction : #{@instruction}"''
-      if !@pi
-        @pi = 0
-      else
-        @pi += 1
-      end
+      # if !@pi
+      #   @pi = 0
+      # else
+      #   @pi += 1
+      # end
       # puts "cpu : current instruction #{@instruction}. current pi \e[91m#{@pi}\e[0m"
       @instruction = convert_to_decimal @instruction
       @instruction = decode_instruction @instruction
@@ -171,6 +171,11 @@ class Cpu
     # puts "executing #{@instruction}"
     # check PI register
     instruction_index = @interruption[1].to_s.to_i(2)
+    if @pi.nil?
+      @pi = 0
+    else
+      @pi += 1
+    end
     puts "\e[31m current PI #{@pi}\e[0m"
     if @cache.on_cache instruction_index
       @instruction = @cache.get_cached_instruction instruction_index
@@ -215,7 +220,7 @@ class Cpu
     #   return
     # end
     write_value(parameter, (read_value parameter) + 1)
-    puts "#### ram size : #{@ram.ram.count}"
+    # puts "#### ram size : #{@ram.ram.count}"
   end
 
   def execute_add(fst_parameter, snd_parameter)

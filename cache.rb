@@ -17,7 +17,7 @@ class Cache
   end
 
   def on_cache(index)
-    puts "\e[33m #{@ram_to_cache} , index is #{index} \e[0m"
+    # puts "\e[33m #{@ram_to_cache} , index is #{index} \e[0m"
     !@ram_to_cache[index].nil?
   end
 
