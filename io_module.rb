@@ -23,4 +23,14 @@ class IOModule
   def send_interruption
     @bus.send_cpu [INTERRUPTION, [INTERRUPTION, 0]]
   end
+
+  def get_instructions__until_loop
+    instructions = []
+    loop {
+      instruction = @instructions.shift
+      instructions << instruction
+      break if instruction[0] == 100101 # loop
+    }
+    instructions
+  end
 end

@@ -3,7 +3,7 @@ require "./cache"
 class Cpu
   attr_accessor :A, :B, :C, :D
 
-  def initialize(bus, ram)
+  def initialize(bus, ram, io_module)
     @interruption
     @instruction = []
     @value
@@ -17,6 +17,7 @@ class Cpu
     @cache = Cache.new ram.ram.count
     @loop_instructions = []
     @registering_loop = false
+    @io_module = io_module
   end
 
   def receive_cpu
@@ -194,7 +195,11 @@ class Cpu
     when :imul
       execute_imul @instruction[1], @instruction[2], @instruction[3]
     when :lbl
-      execute_lbl @instruction[1]
+      # loop_instructions = @io_module.get_instructions__until_loop
+      # loop_instructions.each do | instruction |
+      #   binding.pry  
+      # end
+      # execute_lbl @instruction[1]
     when :loop
       execute_loop @instruction[1], @instruction[2], @instruction[3], @instruction[4]
     else
@@ -203,7 +208,6 @@ class Cpu
   end
 
   def execute_inc(parameter) 
-    binding.pry
     # if @registering_loop == true
     #   @instruction.each do |i|
     #     loop_instructions << i

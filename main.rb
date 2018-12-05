@@ -35,11 +35,12 @@ puts "\n\n"
 
 bus = Bus.new bus_size
 ram = Ram.new ram_size, bus
-cpu = Cpu.new bus, ram
 io_module = IOModule.new bufferSize, bus
+cpu = Cpu.new bus, ram, io_module
 io_module.getEncodedInstructions bytecode
 
 loop {
+	sleep (clock / bandwidth)
 	break if io_module.instructions.empty?
 	puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
 	io_module.send_ram write_op
