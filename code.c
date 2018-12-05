@@ -2,9 +2,9 @@
 // inc D
 // add A, B
 // add B, C
-// lbl 2
-// add A, 2
-A < B : jmp 1 : void
+lbl 1
+add A, 2
+A < 10 : jmp 1 : void
 // add A, 0x00
 // add 0x01, B
 // add 0x0A, 0x0B

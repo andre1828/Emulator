@@ -15,6 +15,8 @@ class Cpu
     @D = 0
     @pi
     @cache = Cache.new ram.ram.count
+    @loop_instructions []
+    @registering_loop = false
   end
 
   def receive_cpu
@@ -123,7 +125,7 @@ class Cpu
     when 36
       decoded_instruction << :lbl << instruction[1]
     when 37
-      decoded_instruction.push  :loop ,
+      decoded_instruction.push :loop ,
                                 decode_register(instruction[1]) ,
                                 :< ,
                                 decode_register(instruction[2]) ,
@@ -216,6 +218,7 @@ class Cpu
   end
 
   def execute_lbl(lbl_value)
+    @registering_loop = true
   end
   
   def execute_loop(fst_parameter, snd_parameter, trd_parameter, frth_parameter)
