@@ -15,7 +15,7 @@ class Cpu
     @D = 0
     @pi
     @cache = Cache.new ram.ram.count
-    @loop_instructions []
+    @loop_instructions = []
     @registering_loop = false
   end
 
@@ -36,7 +36,7 @@ class Cpu
       puts "\e[36m received : #{received} \e[0m"
       puts "cpu : got the requested instruction"
       @instruction = received
-      puts "instruction : #{@instruction}"
+      puts "instruction : #{@instruction}"''
       if !@pi
         @pi = 0
       else
@@ -131,7 +131,7 @@ class Cpu
                                 decode_register(instruction[2]) ,
                                 instruction[3]
       binding.pry
-    else z
+    else
       abort "Invalid instruction"
     end
 
@@ -158,6 +158,7 @@ class Cpu
   end
 
   def mem_address_2_decimal(mem_address)
+    puts mem_address
     mem_address.to_i(16)
   end
 
@@ -179,10 +180,12 @@ class Cpu
       receive_cpu
       puts "\e[41m execute_instruction : got instruction from ram \e[0m"
       @cache.cache_instruction @instruction, instruction_index
+      update_ram if @cache.write_count == 5
     end
 
     case @instruction[0]
     when :inc
+      
       execute_inc @instruction[1]
     when :add
       execute_add @instruction[1], @instruction[2]
@@ -199,8 +202,14 @@ class Cpu
     end
   end
 
-  def execute_inc(parameter)
-    puts "execute_inc #parameter : #{parameter}"
+  def execute_inc(parameter) 
+    binding.pry
+    # if @registering_loop == true
+    #   @instruction.each do |i|
+    #     loop_instructions << i
+    #   end
+    #   return
+    # end
     write_value(parameter, (read_value parameter) + 1)
     puts "#### ram size : #{@ram.ram.count}"
   end
@@ -218,24 +227,24 @@ class Cpu
   end
 
   def execute_lbl(lbl_value)
-    @registering_loop = true
+    # @registering_loop = true
   end
   
   def execute_loop(fst_parameter, snd_parameter, trd_parameter, frth_parameter)
-    case snd_parameter
-    when :<
-      if fst_parameter < snd_parameter
-    when :>
-      if fst_parameter > snd_parameter
-    when :<=
-      if fst_parameter <= snd_parameter
-    when :>=
-      if fst_parameter >= snd_parameter
-    when :==
-      if fst_parameter == snd_parameter
-    else
-      abort "Invalid operand #{snd_parameter}"
-    end
+    # case snd_parameter
+    # when :<
+    #   if fst_parameter < snd_parameter
+    # when :>
+    #   if fst_parameter > snd_parameter
+    # when :<=
+    #   if fst_parameter <= snd_parameter
+    # when :>=
+    #   if fst_parameter >= snd_parameter
+    # when :==
+    #   if fst_parameter == snd_parameter
+    # else
+    #   abort "Invalid operand #{snd_parameter}"
+    # end
   end
 
   def read_value(param)
@@ -278,6 +287,11 @@ class Cpu
 
   def is_instruction?(signal)
     signal.is_a?(Array)
+  end
+
+  def update_ram  
+    @bus.send_ram [WRITE_OP, 0, @cache.cache]
+    @ram.receive_ram
   end
 
   # def is_interruption?(parameter)

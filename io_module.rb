@@ -17,7 +17,7 @@ class IOModule
 
   def send_ram(op)
     # @bus.send_ram [op, 0, @instructions.shift]
-    @bus.send_ram [op, @instructions.shift, @instructions.shift, @instructions.shift, @instructions.shift, @instructions.shift]
+    @bus.send_ram [op, @instructions.shift]
   end
 
   def send_interruption

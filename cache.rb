@@ -1,17 +1,19 @@
 class Cache
-  attr_accessor :ram_to_cache
+  attr_accessor :ram_to_cache, :write_count, :cache
 
   def initialize(ram_size)
     @cache = Array.new(ram_size * 0.25)
 		@cache_usage_boundary = (@cache.count * 0.80).ceil
 		@ram_to_cache = {} #{ 0 => 0, 1 => 1, 2 => 2, 3 => 3, 4 => 4 }
+    @write_count
   end
 
   def get_cached_instruction(instruction_index)
     cache_index = @ram_to_cache[instruction_index]
     @cache[cache_index][:time] = Time.now.nsec 
     cached_instruction = @cache[cache_index][:instruction]
-    decode_instruction(convert_to_decimal(cached_instruction))
+    cached_instruction
+    # decode_instruction(convert_to_decimal(cached_instruction))
   end
 
   def on_cache(index)
@@ -20,6 +22,7 @@ class Cache
   end
 
   def cache_instruction(instruction, instruction_index)
+    @write_count = @write_count ? @write_count + 1 : 0
     @cache[instruction_index] = {instruction: instruction, time: Time.now.nsec}
     @ram_to_cache[instruction_index] = instruction_index
     # p "cache_instruction : @cache #{@cache}"
@@ -34,7 +37,7 @@ class Cache
   end
 
   def convert_to_decimal(instruction)
-    puts "convert_to_decimal :  #{instruction}"
+    puts "cache convert_to_decimal :  #{instruction}"
     instruction.map { |piece| piece.to_s.to_i(2) }
   end
 
@@ -108,8 +111,17 @@ class Cache
       decoded_instruction << :imul << (decode_mem_address instruction[1]) << (decode_register instruction[2]) << (decode_mem_address instruction[3])
     when 32
       decoded_instruction << :imul << (decode_mem_address instruction[1]) << (decode_register instruction[2]) << instruction[3]
+    when 36
+      decoded_instruction << :lbl << instruction[1]
+    when 37
+      decoded_instruction.push :loop ,
+                                decode_register(instruction[1]) ,
+                                :< ,
+                                decode_register(instruction[2]) ,
+                                instruction[3]
+      binding.pry
     else
-      abort "Decode instruction : Invalid instruction  #{instruction}"
+      abort "cache class :  Invalid instruction"
     end
 
     decoded_instruction

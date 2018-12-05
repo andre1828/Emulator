@@ -39,13 +39,15 @@ cpu = Cpu.new bus, ram
 io_module = IOModule.new bufferSize, bus
 io_module.getEncodedInstructions bytecode
 
-puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
-io_module.send_ram write_op
-ram.receive_ram
-io_module.send_interruption
-cpu.receive_cpu
-cpu.execute_instruction
-exit
+loop {
+	break if io_module.instructions.empty?
+	puts "\e[92m #{io_module.instructions.count} instructions left \e[0m"
+	io_module.send_ram write_op
+	ram.receive_ram
+	io_module.send_interruption
+	cpu.receive_cpu
+	cpu.execute_instruction
+}
 # # cpu calls send_ram internally to ask for instruction
 # ram.receive_ram
 # cpu.receive_cpu # get requested instruction
